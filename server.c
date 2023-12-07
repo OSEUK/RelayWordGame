@@ -47,7 +47,7 @@ int main(void) {
 	memset((char *)&sin, '\0', sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(PORTNUM);
-	sin.sin_addr.s_addr = inet_addr("172.18.208.58");
+	sin.sin_addr.s_addr = inet_addr("172.19.230.129");
 	
 	if (bind(sv_sock, (struct sockaddr *)&sin, sizeof(sin))) 
 		err_handling("bind");
@@ -56,8 +56,7 @@ int main(void) {
 		err_handling("listen");
 
 	if ((cli_sock[0] = accept(sv_sock, (struct sockaddr *)&cli, &clientlen)) == -1) 
-		err_handling("accept");
-	
+		err_handling("accept");	
 	printf("Player 1 connected\n");
 
 	if(send(cli_sock[0], start_word, strlen(start_word) + 1, 0) == -1)
@@ -73,7 +72,8 @@ int main(void) {
 	  send(cli_sock[1], Win, strlen(Win) + 1, 0);
 	  printf("Player 1 sent %s\n", word1);
 	  printf("Player 1 Lose \n");
-	}else{
+	}
+	else{
 	  check = 1;
 	  printf("Player 1 sent %s\n", word1);
 	  send(cli_sock[1], word1, strlen(word1) + 1, 0);
