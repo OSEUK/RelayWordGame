@@ -14,7 +14,7 @@ void err_handling(char *error_message){
 	exit(1);
 }
 char* get_random_word() {
-	char *start_words[] = {"hello", "unix", "programming"};
+	char *start_words[] = {"유닉스", "자바", "테스트"};
 	int num_words = sizeof(start_words) / sizeof(start_words[0]);
 	
 	srand((unsigned)time(NULL));
@@ -28,7 +28,7 @@ int compare_first_last(const char *first_str, const char *second_str){
 		return 0;
 	}
 
-	return first_str[strlen(first_str) - 1] == second_str[0];
+	return (first_str[strlen(first_str) - 2] == second_str[1] && first_str[strlen(first_str)-3] == second_str[0]);
 }
 
 int main(void) {
@@ -71,6 +71,7 @@ int main(void) {
 	if (!compare_first_last(start_word, word1)){
 	  send(cli_sock[0], Lose, strlen(Lose) + 1, 0);
 	  send(cli_sock[1], Win, strlen(Win) + 1, 0);
+	  printf("Player 1 sent %s\n", word1);
 	  printf("Player 1 Lose \n");
 	}else{
 	  check = 1;
@@ -81,6 +82,7 @@ int main(void) {
 	while (check) {
 	        recv(cli_sock[1], word2, sizeof(word2), 0);
 		if (!compare_first_last(word1, word2)) {
+		  printf("Player 2 sent %s\n", word2);
 		  printf("Player 2 Lose \n");
 		  send(cli_sock[1], Lose, strlen(Lose) + 1, 0);
 		  send(cli_sock[0], Win, strlen(Win) + 1, 0);
@@ -92,6 +94,7 @@ int main(void) {
 
 		recv(cli_sock[0], word1, sizeof(word1), 0);
 		if (!compare_first_last(word2, word1)) {
+		  printf("Player 1 sent %s\n", word1);
 		  printf("Player 1 Lose\n");
 		  send(cli_sock[0], Lose, strlen(Lose) + 1, 0);
 		  send(cli_sock[1], Win, strlen(Win) + 1, 0);
