@@ -23,17 +23,21 @@ char* get_random_word() {
 	return start_words[random_index];
 }
 
-int compare_first_last(const char *last_word, const char *first_word){
-	if (strlen(last_word) == 0 || strlen(first_word) == 0) {
+int compare_first_last(const char *first_str, const char *second_str){
+	if (strlen(first_str) == 0 || strlen(second_str) == 0) {
 		return 0;
 	}
 
-	return strcmp(last_word + strlen(last_word) - 1, first_word);
+	return first_str[strlen(first_str) - 1] == second_str[0];
 }
 
 int main(void) {
-	char word[256];
+        char word1[256], word2[256];
+	char *Lose, *Win;
+	Lose = "You Lose";
+	Win = "You Win";
 	char* start_word = get_random_word();
+	int check = 0;
 	struct sockaddr_in sin, cli;	
 	int sv_sock, cli_sock[2], clientlen = sizeof(cli);
 	
@@ -43,7 +47,7 @@ int main(void) {
 	memset((char *)&sin, '\0', sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(PORTNUM);
-	sin.sin_addr.s_addr = inet_addr("172.19.230.129");
+	sin.sin_addr.s_addr = inet_addr("172.18.208.58");
 	
 	if (bind(sv_sock, (struct sockaddr *)&sin, sizeof(sin))) 
 		err_handling("bind");
@@ -63,17 +67,39 @@ int main(void) {
 		err_handling("accept");
 	printf("Player 2 connected\n");
 
+	recv(cli_sock[0], word1, sizeof(word1), 0);
+	if (!compare_first_last(start_word, word1)){
+	  send(cli_sock[0], Lose, strlen(Lose) + 1, 0);
+	  send(cli_sock[1], Win, strlen(Win) + 1, 0);
+	  printf("Player 1 Lose \n");
+	}else{
+	  check = 1;
+	  printf("Player 1 sent %s\n", word1);
+	  send(cli_sock[1], word1, strlen(word1) + 1, 0);
+	}
 	
-	while (1) {
-		recv(cli_sock[0], word, sizeof(word), 0);
-		printf("Player 1 sent %s\n", word);
+	while (check) {
+	        recv(cli_sock[1], word2, sizeof(word2), 0);
+		if (!compare_first_last(word1, word2)) {
+		  printf("Player 2 Lose \n");
+		  send(cli_sock[1], Lose, strlen(Lose) + 1, 0);
+		  send(cli_sock[0], Win, strlen(Win) + 1, 0);
+		  break;
+		}
+		printf("Player 2 sent %s\n", word2);
+		
+		send(cli_sock[0], word2, strlen(word2) + 1, 0);
 
-		send(cli_sock[1], word, strlen(word) + 1, 0);
-		
-		recv(cli_sock[1], word, sizeof(word), 0);
-		printf("Player 2 sent %s\n", word);
-		
-		send(cli_sock[0], word, strlen(word) + 1, 0);
+		recv(cli_sock[0], word1, sizeof(word1), 0);
+		if (!compare_first_last(word2, word1)) {
+		  printf("Player 1 Lose\n");
+		  send(cli_sock[0], Lose, strlen(Lose) + 1, 0);
+		  send(cli_sock[1], Win, strlen(Win) + 1, 0);
+		  break;
+		}
+		printf("Player 1 sent %s\n", word1);
+
+		send(cli_sock[1], word1, strlen(word1) + 1, 0);
 	}
 
 	close(cli_sock[0]);
