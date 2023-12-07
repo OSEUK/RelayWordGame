@@ -28,7 +28,7 @@ int main() {
 
 	if (connect(sv_sock, (struct sockaddr *)&sin, sizeof(sin))) 
 		err_handling("connect");
-	
+			
 	while(1) {
 		if(recv(sv_sock, word, sizeof(word), 0) == -1)
 			err_handling("recv");
@@ -39,7 +39,7 @@ int main() {
 
 		if (send(sv_sock, word, strlen(word) + 1, 0) == -1)
 			err_handling("send");
-	}
+	}		
 	close(sv_sock);
 	
 	return 0;

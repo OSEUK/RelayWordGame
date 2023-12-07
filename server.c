@@ -22,8 +22,17 @@ char* get_random_word() {
 	int random_index = rand() % num_words;
 	return start_words[random_index];
 }
+
+int compare_first_last(const char *last_word, const char *first_word){
+	if (strlen(last_word) == 0 || strlen(first_word) == 0) {
+		return 0;
+	}
+
+	return strcmp(last_word + strlen(last_word) - 1, first_word);
+}
+
 int main(void) {
-	char *word;
+	char word[256];
 	char* start_word = get_random_word();
 	struct sockaddr_in sin, cli;	
 	int sv_sock, cli_sock[2], clientlen = sizeof(cli);
@@ -36,7 +45,6 @@ int main(void) {
 	sin.sin_port = htons(PORTNUM);
 	sin.sin_addr.s_addr = inet_addr("172.19.230.129");
 	
-	unlink("172.19.230.129");
 	if (bind(sv_sock, (struct sockaddr *)&sin, sizeof(sin))) 
 		err_handling("bind");
 
@@ -45,6 +53,7 @@ int main(void) {
 
 	if ((cli_sock[0] = accept(sv_sock, (struct sockaddr *)&cli, &clientlen)) == -1) 
 		err_handling("accept");
+	
 	printf("Player 1 connected\n");
 
 	if(send(cli_sock[0], start_word, strlen(start_word) + 1, 0) == -1)
