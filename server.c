@@ -50,13 +50,13 @@ int main(void) {
 		err_handling("listen");
 
 	// 첫 번째 클라이언트의 연결을 기다림
-	if ((cli_sock[0] = accept(sv_sock, (struct sockaddr *)&cli, &clientlen)) == -1) 
+	if ((cli_sock[0] = accept(sv_sock, (struct sockaddr *)&cli,(socklen_t *)&clientlen)) == -1) 
 		err_handling("accept");
 	
 	printf("Player 1 connected\n");
 
 	// 두 번째 클라리언트의 연결을 기다림
-	if ((cli_sock[1] = accept(sv_sock, (struct sockaddr *)&cli, &clientlen)) == -1)
+	if ((cli_sock[1] = accept(sv_sock, (struct sockaddr *)&cli, (socklen_t *)&clientlen)) == -1)
 	        err_handling("accept");
 
 	printf("Player 2 connected\n");
