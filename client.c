@@ -5,19 +5,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "error.h"
 
 #define PORTNUM 9000
-
-void err_handling(char *error_message) {
-  perror(error_message);
-  exit(1);
-}
 
 int main() {
   int sv_sock;
   char word[256];
   int state = 1;
   struct sockaddr_in sin;
+
+  printf("게임 시작을 기다리는 중 입니다.\n");
 
   // 소켓을 생성
   if ((sv_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -31,8 +29,6 @@ int main() {
   sin.sin_port = htons(PORTNUM);
   // 바인딩될 IP 주소를 할당
   sin.sin_addr.s_addr = inet_addr("172.18.208.58");
-
-  printf("게임 시작을 기다리는 중 입니다.");
 
   // 소켓 주소 구조체에 지정한 서버로 connect() 함수를 사용해 연결을 요청
   if (connect(sv_sock, (struct sockaddr *)&sin, sizeof(sin)))

@@ -6,25 +6,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include "error.h"
+#include "randword.h"
 
 #define PORTNUM 9000
-
-// 에러 발생시 에러 메시지를 출력하는 함수
-void err_handling(char *error_message){
-	perror(error_message);
-	exit(1);
-}
-
-// 미리 정의된 목록에서 무작위 단어를 얻는 함수
-char* get_random_word() {
-	char *start_words[] = {"유닉스", "자바", "테스트"};
-	int num_words = sizeof(start_words) / sizeof(start_words[0]);
-	
-	srand((unsigned)time(NULL));
-
-	int random_index = rand() % num_words;
-	return start_words[random_index];
-}
 
 // 첫 번째 단어의 끝과 두번째 단어의 시작을 비교하는 함수
 int compare_first_last(const char *first_str, const char *second_str){
