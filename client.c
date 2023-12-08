@@ -27,12 +27,15 @@ int main() {
   sin.sin_port = htons(PORTNUM);
   sin.sin_addr.s_addr = inet_addr("172.18.208.58");
 
+  printf("게임 시작을 기다리는 중 입니다.");
+
   if (connect(sv_sock, (struct sockaddr *)&sin, sizeof(sin)))
     err_handling("connect");
-
+  
   while(state) {
     if(recv(sv_sock, word, sizeof(word), 0) == -1)
       err_handling("recv");
+
     printf("Received : %s\n", word);
     if(strcmp(word, "You Lose\0") == 0 || strcmp(word, "You Win\0") == 0)
       state =0;

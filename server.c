@@ -37,7 +37,7 @@ int compare_first_last(const char *first_str, const char *second_str){
 
 int main(void) {
         char word1[256], word2[256];
-	char *Lose = "You Lose", *Win = "You Win", *Wait = "두 번째 클라리언트를 기다리는 중 입니다.";
+	char *Lose = "You Lose", *Win = "You Win";
 	char* start_word = get_random_word();
 	int check = 0;
 	struct sockaddr_in sin, cli;	
@@ -69,10 +69,6 @@ int main(void) {
 		err_handling("accept");
 	
 	printf("Player 1 connected\n");
-	// 두 번째 클라이언트의 연결을 기다리라는 메시지를 보냄
-	if(send(cli_sock[0], Wait, strlen(Wait) + 1, 0) == -1)
-	  err_handling("send");
-
 
 	// 두 번째 클라리언트의 연결을 기다림
 	if ((cli_sock[1] = accept(sv_sock, (struct sockaddr *)&cli, &clientlen)) == -1)
