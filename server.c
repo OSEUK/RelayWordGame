@@ -6,111 +6,73 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include "error.h"
+#include "randword.h"
+#include "compare_first_last.h"
+#include "sendBySocket.h"
 
 #define PORTNUM 9000
+#define LOSE "You Lose"
+#define WIN "You Win"
 
-void err_handling(char *error_message){
-	perror(error_message);
-	exit(1);
-}
-char* get_random_word() {
-	char *start_words[] = {"유닉스", "자바", "테스트"};
-	int num_words = sizeof(start_words) / sizeof(start_words[0]);
-	
-	srand((unsigned)time(NULL));
+void playRelayWordGame(int cli_sock[2], const char *start_word);
 
-	int random_index = rand() % num_words;
-	return start_words[random_index];
-}
-
-int compare_first_last(const char *first_str, const char *second_str){
-	if (strlen(first_str) == 0 || strlen(second_str) == 0) {
-		return 0;
-	}
-
-	return (first_str[strlen(first_str) - 2] == second_str[1] && first_str[strlen(first_str)-3] == second_str[0]);
-}
-
-int main(void) {
-        char word1[256], word2[256];
-	char *Lose, *Win;
-	Lose = "You Lose";
-	Win = "You Win";
+int main() 
+{	
+    
+	// 게임 시작 시 제시어
 	char* start_word = get_random_word();
-	int check = 0;
+	
+	// 사용할 소켓 변수 정의	
 	struct sockaddr_in sin, cli;	
 	int sv_sock, cli_sock[2], clientlen = sizeof(cli);
-	
+
+	// 소켓 생성
 	if ((sv_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
 		err_handling("socket");
 
+	// 소켓 구조체 초기화
 	memset((char *)&sin, '\0', sizeof(sin));
+	// 소켓 구조체에서 소켓 패밀리를 AF_INET로 지정
 	sin.sin_family = AF_INET;
+	// 소켓이 사용할 포트 번호를 할당
 	sin.sin_port = htons(PORTNUM);
-	sin.sin_addr.s_addr = inet_addr("172.19.230.129");
-	
+	// 바인딩될 IP 주소를 할당
+	sin.sin_addr.s_addr = inet_addr("172.19.229.59");
+
+	// 서버 소켓에 주소 정보를 할당
 	if (bind(sv_sock, (struct sockaddr *)&sin, sizeof(sin))) 
 		err_handling("bind");
 
+	// 서버 소켓이 최대 2개의 클라이언트의 연결을 기다리도록 설정
 	if (listen(sv_sock, 2)) 
 		err_handling("listen");
-
-	if ((cli_sock[0] = accept(sv_sock, (struct sockaddr *)&cli, &clientlen)) == -1) 
-		err_handling("accept");	
-	printf("Player 1 connected\n");
-
-	if(send(cli_sock[0], start_word, strlen(start_word) + 1, 0) == -1)
-		err_handling("send");	
 	
-	if ((cli_sock[1] = accept(sv_sock, (struct sockaddr *)&cli, &clientlen)) == -1)	
-		err_handling("accept");
-	printf("Player 2 connected\n");
+	// 클라이언트 두 명의 connect를 받음
+	for (int i = 0; i < 2; i++){
+		if ((cli_sock[i] = accept(sv_sock, (struct sockaddr *)&cli,(socklen_t *)&clientlen)) == -1)
+				err_handling("accept");
+		
+		printf("Player %d connected\n", i + 1);
+	}
 
-	recv(cli_sock[0], word1, sizeof(word1), 0);
-	if (!compare_first_last(start_word, word1)){
-	  send(cli_sock[0], Lose, strlen(Lose) + 1, 0);
-	  send(cli_sock[1], Win, strlen(Win) + 1, 0);
-	  printf("Player 1 sent %s\n", word1);
-	  printf("Player 1 Lose \n");
+	pid_t pid;
+	
+	if ((pid = fork()) == -1)
+		err_handling("fork");
+	else if (pid == 0){
+		playRelayWordGame(cli_sock, start_word);
 	}
 	else{
-	  check = 1;
-	  printf("Player 1 sent %s\n", word1);
-	  send(cli_sock[1], word1, strlen(word1) + 1, 0);
-	}
-	
-	while (check) {
-	        recv(cli_sock[1], word2, sizeof(word2), 0);
-		if (!compare_first_last(word1, word2)) {
-		  printf("Player 2 sent %s\n", word2);
-		  printf("Player 2 Lose \n");
-		  send(cli_sock[1], Lose, strlen(Lose) + 1, 0);
-		  send(cli_sock[0], Win, strlen(Win) + 1, 0);
-		  break;
-		}
-		printf("Player 2 sent %s\n", word2);
-		
-		send(cli_sock[0], word2, strlen(word2) + 1, 0);
-
-		recv(cli_sock[0], word1, sizeof(word1), 0);
-		if (!compare_first_last(word2, word1)) {
-		  printf("Player 1 sent %s\n", word1);
-		  printf("Player 1 Lose\n");
-		  send(cli_sock[0], Lose, strlen(Lose) + 1, 0);
-		  send(cli_sock[1], Win, strlen(Win) + 1, 0);
-		  break;
-		}
-		printf("Player 1 sent %s\n", word1);
-
-		send(cli_sock[1], word1, strlen(word1) + 1, 0);
+		close(cli_sock[0]);
+		close(cli_sock[1]);
+		wait(NULL);
 	}
 
-	close(cli_sock[0]);
-	close(cli_sock[1]);
 	close(sv_sock);
-
+	
 	return 0;
 }
-
-
-
