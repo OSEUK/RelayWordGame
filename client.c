@@ -8,15 +8,18 @@
 #include "error.h"
 #include "printManual.h"
 
-#define PORTNUM 9000
 
-
-int main() {
-  int sv_sock;
-  char word[256];
-  int state = 1;
-  struct sockaddr_in sin; 
-
+int main(int argc, char *argv[]) {
+  
+	if (argc != 3){
+		printf("게임 접속 방법: ./cli [접속할 소켓의 PortNum] [접속할 소켓의 IP Address]\n");
+		exit(1);
+	}
+	int sv_sock;
+  	char word[256];
+  	int state = 1;
+  	struct sockaddr_in sin; 
+	
   // 소켓을 생성
   if ((sv_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     err_handling("socket");
@@ -26,9 +29,9 @@ int main() {
   // 소켓 구조체에게 소켓 패밀리를 AF_INET으로 지정
   sin.sin_family = AF_INET;
   // 소켓이 사용할 포트 번호를 할당
-  sin.sin_port = htons(PORTNUM);
+  sin.sin_port = htons(atoi(argv[1]));
   // 바인딩될 IP 주소를 할당
-  sin.sin_addr.s_addr = inet_addr("172.19.229.59");
+  sin.sin_addr.s_addr = inet_addr(argv[2]);
 
   // 소켓 주소 구조체에 지정한 서버로 connect() 함수를 사용해 연결을 요청
   if (connect(sv_sock, (struct sockaddr *)&sin, sizeof(sin)))
