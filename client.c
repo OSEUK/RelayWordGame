@@ -8,6 +8,8 @@
 #include "error.h"
 #include "printManual.h"
 
+#define LOSE "You Lose"
+#define WIN "You Win"
 
 int main(int argc, char *argv[]) {
   
@@ -46,7 +48,7 @@ int main(int argc, char *argv[]) {
 
     // 상대방이 보낸 단어 출력 
     // 승패 결과가 오면 state를 0으로 바꿔 while문 탈출 
-    if(strcmp(word, "You Lose\0") == 0 || strcmp(word, "You Win\0") == 0){
+    if(strcmp(word, LOSE) == 0 || strcmp(word, WIN) == 0){
 	    printf("%s\n",word);
       	    state =0;
     }
